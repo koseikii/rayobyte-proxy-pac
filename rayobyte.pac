@@ -1,21 +1,22 @@
 function FindProxyForURL(url, host) {
-    // Define your proxy address from IPRoyal (replace with your actual proxy address)
-    var proxyAddress = "proxy.iproyal.com:1080"; // Example for SOCKS5 proxy
-    
-    // List of known gaming servers or other fast routes if needed
-    var fastHosts = [
-        "game-server1.example.com", // Replace with actual fast server domains or IP ranges
+    // Define the IPRoyal HTTP proxy server address (use the correct IP and port from IPRoyal)
+    var proxyAddress = "proxy.iproyal.com:80"; // Example HTTP proxy, replace with the actual proxy and port
+
+    // List of domains or servers for which we want to avoid proxy usage (fast servers like gaming servers)
+    var fastServers = [
+        "game-server1.example.com",  // Replace with actual gaming servers for low-latency connection
         "game-server2.example.com",
-        "game-server3.example.com"
+        "streaming-service.com",     // For streaming, bypass the proxy for better speed
+        "fast-webserver.com"
     ];
 
-    // Check if the host matches any of the known fast servers
-    for (var i = 0; i < fastHosts.length; i++) {
-        if (dnsDomainIs(host, fastHosts[i])) {
-            return "SOCKS5 " + proxyAddress; // Use proxy for fast game servers
+    // Direct traffic to proxy if the host matches one of the fast servers (skip proxy for these)
+    for (var i = 0; i < fastServers.length; i++) {
+        if (dnsDomainIs(host, fastServers[i])) {
+            return "DIRECT"; // No proxy for these fast servers
         }
     }
 
-    // Default rule for general traffic – route through IPRoyal's proxy
-    return "SOCKS5 " + proxyAddress; // All other traffic uses IPRoyal's proxy
+    // Default action: route all traffic through IPRoyal's HTTP proxy
+    return "HTTP " + proxyAddress; // Use HTTP proxy for everything else
 }
