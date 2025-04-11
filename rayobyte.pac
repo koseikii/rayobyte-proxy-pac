@@ -1,35 +1,24 @@
-function FindProxyForURL(url, host) {
-    // Define Rayobyte proxies
-    var primaryProxy = "PROXY yourusername:yourpassword@proxy.rayobyte.com:8080";  // Primary proxy
-    var backupProxy = "PROXY yourusername:yourpassword@backup.proxy.rayobyte.com:8080";  // Backup proxy
-
-    // Function to determine if a proxy should be used based on host
-    function shouldUseProxy(host) {
-        // Define the domains that should use the proxy
-        var proxyDomains = [
-            "*.example.com",
-            "*.anotherexample.com"
-        ];
-
-        // Check if the host matches any of the proxy domains
-        for (var i = 0; i < proxyDomains.length; i++) {
-            if (shExpMatch(host, proxyDomains[i])) {
-                return true;
-            }
-        }
-        return false;
-    }
-
-    // Check if the host should use a proxy
-    if (shouldUseProxy(host)) {
-        // Example: Prioritize primary proxy but fallback to backup if needed
-        if (shExpMatch(host, "*.example.com")) {
-            return primaryProxy;  // Use primary proxy for example.com
-        } else if (shExpMatch(host, "*.anotherexample.com")) {
-            return backupProxy;  // Use backup proxy for anotherexample.com
-        }
-    }
-
-    // Default: Direct connection for all other traffic
-    return "DIRECT";
+// Function to test proxy latency (pseudo-code)
+function testProxyLatency(proxy) {
+    // Implement a mechanism to test the latency of the proxy
+    // Return true if the proxy is fast, false otherwise
 }
+
+// Example: Route traffic for '*.example.com' through primary proxy
+if (shExpMatch(host, "*.example.com")) {
+    if (testProxyLatency(primaryProxy)) {
+        return primaryProxy;  // Use primary proxy if fast
+    } else {
+        return backupProxy;  // Fallback to backup proxy if primary is slow
+    }
+}
+
+// Example: Route traffic for '*.anotherexample.com' through backup proxy
+if (shExpMatch(host, "*.anotherexample.com")) {
+    if (testProxyLatency(backupProxy)) {
+        return backupProxy;  // Use backup proxy if fast
+    }
+}
+
+// Default: Direct connection for all other traffic
+return "DIRECT";
