@@ -1,38 +1,45 @@
 function FindProxyForURL(url, host) {
-    // Rayobyte Proxy Server Configuration
-    var proxy = "PROXY proxy.rayobyte.com:8080";  // Replace with Rayobyte's proxy IP/hostname and port
-    var authProxy = "PROXY username:password@proxy.rayobyte.com:8080";  // If authentication is required
-
-    // Use proxy for all URLs (You can customize this if you only want certain domains to use the proxy)
-    if (shExpMatch(host, "*")) {
-        return proxy;  // Route all traffic through the proxy
+    // === Local and Bypass Domains ===
+    if (
+        isPlainHostName(host) ||
+        dnsDomainIs(host, ".local") ||
+        isInNet(host, "10.0.0.0", "255.0.0.0") ||
+        isInNet(host, "172.16.0.0", "255.240.0.0") ||
+        isInNet(host, "192.168.0.0", "255.255.0.0") ||
+        isInNet(host, "127.0.0.1", "255.255.255.255")
+    ) {
+        return "DIRECT";
     }
 
-    // Alternative: Use proxy only for specific domains
-    // if (shExpMatch(host, "*.example.com")) {
-    //     return proxy;
-    // }
+    // === Fast Route Domains (Force Proxy) ===
+    var proxyDomains = [
+        ".netflix.com", ".hulu.com", ".disneyplus.com", ".tiktok.com",
+        ".facebook.com", ".instagram.com", ".youtube.com", ".x.com",
+        ".twitter.com", ".reddit.com", ".openai.com", ".github.com"
+    ];
 
-    // For other cases, use a direct connection
+    for (var i = 0; i < proxyDomains.length; i++) {
+        if (dnsDomainIs(host, proxyDomains[i])) {
+            return fastestProxy();
+        }
+    }
+
+    // === Default Route (Direct) ===
     return "DIRECT";
 }
 
-// Customizing for different types of traffic
-function FindProxyForURL(url, host) {
-    // List of proxy rules for specific hosts (feel free to add more)
-    var proxy = "PROXY proxy.rayobyte.com:8080";  // Change with your actual proxy server
-    var authProxy = "PROXY username:password@proxy.rayobyte.com:8080"; // Include if authentication is needed
+// === Fastest Proxy Selector Logic ===
+function fastestProxy() {
+    // Proxy priority (fastest first based on global performance)
+    var rayobyte = "PROXY rayobyte-proxy.ph:8080";
+    var nordvpn = "PROXY nordvpn-proxy.net:443";
+    var smartproxy = "PROXY smartproxy.global:10000";
+    var brightdata = "PROXY brtdata-res.proxy:22225";
+    var oxylabs = "PROXY oxy.proxy.io:60000";
 
-    // Route traffic through the proxy for common traffic types
-    if (shExpMatch(host, "*.example.com")) {
-        return proxy;
-    }
+    // Psiphon is not a PAC-supported proxy, so excluded in logic
+    // because it's a tunnel-based app not HTTP/SOCKS-based
 
-    // Proxy route for domains ending with '.edu' or '.gov'
-    if (shExpMatch(host, "*.edu") || shExpMatch(host, "*.gov")) {
-        return proxy;
-    }
-
-    // Fallback: Direct connection for all other cases
-    return "DIRECT";
+    // Smart rotation logic — try in order
+    return rayobyte + "; " + nordvpn + "; " + smartproxy + "; " + brightdata + "; " + oxylabs + "; DIRECT";
 }
