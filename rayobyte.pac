@@ -1,49 +1,61 @@
 function FindProxyForURL(url, host) {
-    // Define fast proxies based on geographical regions or other criteria
-    var proxyUS = "PROXY 192.168.1.1:8080";   // U.S. Proxy
-    var proxyEU = "PROXY 192.168.1.2:8080";   // EU Proxy
-    var proxyAsia = "PROXY 192.168.1.3:8080"; // Asia Proxy
-    var direct = "DIRECT";                    // No proxy, direct connection
+    // Define the proxy servers with their latency (in milliseconds)
+    var proxies = {
+        "bright_data": "PROXY 12.34.56.78:8080", // Bright Data (Luminati) - 50 ms
+        "oxylabs": "PROXY 23.45.67.89:8080",    // Oxylabs - 50 ms
+        "smartproxy": "PROXY 34.56.78.90:8080",  // SmartProxy - 40 ms
+        "highproxies": "PROXY 45.67.89.01:8080", // HighProxies - 70 ms
+        "stormproxies": "PROXY 56.78.90.12:8080" // StormProxies - 60 ms
+    };
 
-    // Simulate dynamic geolocation detection (static for now)
-    var userCountry = getUserCountry(); // This would be dynamically determined from a geolocation API
+    // Predefined latency (response time in ms) for each proxy
+    var proxyPerformance = {
+        "bright_data": 50,  // Bright Data - 50 ms
+        "oxylabs": 50,      // Oxylabs - 50 ms
+        "smartproxy": 40,   // SmartProxy - 40 ms (fastest)
+        "highproxies": 70,  // HighProxies - 70 ms
+        "stormproxies": 60  // StormProxies - 60 ms
+    };
 
-    // Route based on user country
-    if (userCountry === "US") {
-        return proxyUS;  // Route traffic to U.S. proxy if the user is in the U.S.
-    } else if (userCountry === "EU") {
-        return proxyEU;  // Route traffic to EU proxy if the user is in Europe
-    } else if (userCountry === "AS") {
-        return proxyAsia; // Route traffic to Asia proxy if the user is in Asia
+    // Sort proxies by latency in ascending order (fastest first)
+    var sortedProxies = Object.keys(proxyPerformance).sort(function(a, b) {
+        return proxyPerformance[a] - proxyPerformance[b];
+    });
+
+    // Select the fastest proxy (lowest latency)
+    var fastestProxy = proxies[sortedProxies[0]]; // Fastest proxy with the lowest latency
+
+    // Gaming-related domains (examples: Steam, Epic Games, Xbox Live)
+    if (shExpMatch(host, "*.steam.com") || shExpMatch(host, "*.epicgames.com") || shExpMatch(host, "*.xbox.com")) {
+        // Gaming traffic should use the fastest proxy for minimal latency
+        return fastestProxy;
     }
 
-    // Example: Use proxyUS for specific domain
-    if (shExpMatch(url, "*.example.com")) {
-        return proxyUS;  // Route traffic to proxy in the U.S. for this domain
+    // App-related domains (examples: Google Play, Netflix, Spotify)
+    if (shExpMatch(host, "*.google.com") || shExpMatch(host, "*.netflix.com") || shExpMatch(host, "*.spotify.com")) {
+        // App traffic should route through the fastest proxy to avoid any buffering or lag
+        return fastestProxy;
     }
 
-    // If no specific country or domain matched, apply load balancing among proxies
-    return selectProxyFromPool();
+    // Social Media and Entertainment traffic (e.g., YouTube, Facebook, Instagram)
+    if (shExpMatch(host, "*.youtube.com") || shExpMatch(host, "*.facebook.com") || shExpMatch(host, "*.instagram.com")) {
+        // Entertainment traffic routing through the fastest proxy to ensure a smooth experience
+        return fastestProxy;
+    }
+
+    // Additional app-specific traffic (e.g., Discord, Telegram, WhatsApp)
+    if (shExpMatch(host, "*.discord.com") || shExpMatch(host, "*.telegram.org") || shExpMatch(host, "*.whatsapp.com")) {
+        // Route messaging app traffic through the fastest proxy
+        return fastestProxy;
+    }
+
+    // Specific website routing (e.g., banking, security-related websites)
+    if (shExpMatch(host, "*.bank.com") || shExpMatch(host, "*.securepay.com")) {
+        // Security-sensitive traffic should go through the fastest proxy
+        return fastestProxy;
+    }
+
+    // Default behavior: Use the fastest proxy for all other URLs
+    return fastestProxy;
 }
 
-// Helper function for dynamic geolocation (In reality, this could be a call to an API)
-function getUserCountry() {
-    // This is just a simulation. Replace with an actual geolocation API to determine user location dynamically
-    // Example: Use ipinfo.io or MaxMind GeoIP2 service to detect user country based on IP
-    var userIP = "8.8.8.8"; // Simulated user IP (you would get this dynamically)
-    var userGeo = "US";      // Simulate detection: Assume user is from the US for this example
-    return userGeo;          // Return country or region code
-}
-
-// Load balancing function to randomly choose a proxy from a pool
-function selectProxyFromPool() {
-    var proxyPool = [
-        "PROXY 192.168.1.1:8080", // U.S. Proxy
-        "PROXY 192.168.1.2:8080", // EU Proxy
-        "PROXY 192.168.1.3:8080", // Asia Proxy
-    ];
-
-    // Randomly select one from the pool for load balancing
-    var randomIndex = Math.floor(Math.random() * proxyPool.length);
-    return proxyPool[randomIndex];  // Return a randomly selected proxy
-}
