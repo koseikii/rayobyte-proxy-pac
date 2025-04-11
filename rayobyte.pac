@@ -1,52 +1,32 @@
 function FindProxyForURL(url, host) {
-    // Define Rayobyte proxy and optional authentication
-    var proxy = "PROXY proxy.rayobyte.com:8080";  // Replace with Rayobyte proxy and port
-    var authProxy = "PROXY yourusername:yourpassword@proxy.rayobyte.com:8080";  // Replace with your credentials
+    // Define the Rayobyte proxy (replace with your details)
+    var rayobyteProxy = "PROXY proxy.rayobyte.com:8080";  // Replace with Rayobyte proxy and port
+    var rayobyteAuthProxy = "PROXY yourusername:yourpassword@proxy.rayobyte.com:8080";  // Replace with your credentials
 
-    // Check if the client is on Wi-Fi (in this case, using a static IP range for Wi-Fi as an example)
-    var isWiFi = isInNet(myIpAddress(), "192.168.0.0", "255.255.255.0");  // Adjust this based on your local Wi-Fi network IP range
+    // Instagram domains
+    var instagramDomains = [
+        "instagram.com",
+        "www.instagram.com",
+        "api.instagram.com",
+        "graph.instagram.com",
+        "m.instagram.com",
+        "scontent-xx.xx.fbcdn.net"
+    ];
 
-    // Route traffic for Instagram, Facebook, and related services through Rayobyte proxy if Wi-Fi
-    if (isWiFi) {
-        if (shExpMatch(host, "*.instagram.com") || 
-            shExpMatch(host, "*.fbcdn.net") || 
-            shExpMatch(host, "*.akamaihd.net") || 
-            shExpMatch(host, "*.instagram.net") || 
-            shExpMatch(host, "*.facebook.com") || 
-            shExpMatch(host, "*.fb.com") || 
-            shExpMatch(host, "*.whatsapp.net") || 
-            shExpMatch(host, "*.messenger.com") || 
-            shExpMatch(host, "*.cdninstagram.com") || 
-            shExpMatch(host, "*.t.co") || 
-            shExpMatch(host, "*.twitter.com")) {
-            return proxy;
-        }
-    } else {
-        // When not on Wi-Fi (mobile data or other), ensure less proxying for faster browsing
-        if (shExpMatch(host, "*.example.com")) {
-            return proxy;
+    // If the host matches Instagram, use the proxy (Rayobyte in this case)
+    for (var i = 0; i < instagramDomains.length; i++) {
+        if (shExpMatch(host, instagramDomains[i])) {
+            // You can choose either the authenticated proxy or the simple proxy here
+            return rayobyteAuthProxy;  // Use authenticated proxy
+            // return rayobyteProxy;  // Use non-authenticated proxy
         }
     }
 
-    // Route traffic for video services like YouTube, Vimeo, or streaming services, if on Wi-Fi for better speed
-    if (isWiFi && (shExpMatch(host, "*.youtube.com") || 
-                   shExpMatch(host, "*.vimeo.com") || 
-                   shExpMatch(host, "*.dailymotion.com"))) {
-        return proxy;
+    // Example: Route traffic for '*.example.com' through Rayobyte proxy
+    if (shExpMatch(host, "*.example.com")) {
+        return rayobyteProxy;
     }
 
-    // Ensure direct connection for general web browsing when not on Wi-Fi
-    if (!isWiFi) {
-        return "DIRECT";
-    }
-
-    // Ensure local traffic (private or internal IP ranges) does not go through the proxy
-    if (isInNet(host, "192.168.0.0", "255.255.255.0") || 
-        isInNet(host, "10.0.0.0", "255.0.0.0") || 
-        isInNet(host, "172.16.0.0", "255.240.0.0")) {
-        return "DIRECT";
-    }
-
-    // Default: Direct connection for all other traffic
+    // Default case: Direct connection for all other traffic
     return "DIRECT";
 }
